@@ -13,13 +13,12 @@ import scala.util.{Failure, Success}
   * Write a GUI application which enables the user to select a folder. The application outputs the list of
   * all files under this folder (and sub folders).
   */
-class UI extends MainFrame {
+object UI extends MainFrame {
 
   title = "File selector"
 
-  object searchWords extends TextField {
-    columns = 30
-  }
+  //search input text
+  object searchWords extends TextField(columns = 30)
 
   val fileChooser: FileChooser = new FileChooser()
 
@@ -59,6 +58,7 @@ class UI extends MainFrame {
       }
 
       if (selectedFile.isDirectory) {
+        //do future
         SearchActor.search(selectedFile, searchWords.text).onComplete {
           case Success(result) =>
             textArea.text = result._1.mkString("\n")
@@ -93,8 +93,7 @@ class UI extends MainFrame {
     contents += buttonPanel
     contents += statusPanel
 
-    for (e <- contents)
-      e.xLayoutAlignment = 0.0
+    contents foreach {_.xLayoutAlignment = 0.0}
     border = Swing.EmptyBorder(30, 10, 10, 10)
 
   }
@@ -120,6 +119,5 @@ class UI extends MainFrame {
 }
 
 object RunIt extends App {
-  val selector = new UI
-  selector.visible = true
+  UI.visible = true
 }
