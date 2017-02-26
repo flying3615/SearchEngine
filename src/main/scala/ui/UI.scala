@@ -1,6 +1,8 @@
 package ui
 
+import java.awt.Color
 import java.io.File
+import javax.swing.border.Border
 
 import scala.collection.mutable.ArrayBuffer
 import scala.swing.{BoxPanel, Button, FileChooser, FlowPanel, Label, MainFrame, Orientation, ScrollPane, Swing, TextArea, TextField}
@@ -27,7 +29,6 @@ class UI extends MainFrame{
     editable = false
   }
 
-  val scrollPane = new ScrollPane(textArea)
 
   val buttonPanel = new FlowPanel{
     contents += Button("Close"){
@@ -49,21 +50,33 @@ class UI extends MainFrame{
     def goSearch(): Unit = {
       println("go for search")
     }
-
   }
 
+
+  val statusPanel = new BoxPanel(Orientation.Horizontal){
+    val statusBar = new Label("status")
+    statusBar.yLayoutAlignment =0.0
+    contents +=statusBar
+  }
+
+//  statusPanel.border = javax.swing.BorderFactory.createEtchedBorder()
+
+  //build main panel
   val mainPanel = new BoxPanel(Orientation.Vertical) {
     contents += searchPanel
     contents += Swing.VStrut(10)
     contents += Swing.Glue
     contents += new Label("File Path")
     contents += Swing.VStrut(5)
-    contents += scrollPane
+    contents += new ScrollPane(textArea)
     contents += Swing.VStrut(5)
     contents += buttonPanel
+    contents += statusPanel
+
     for (e <- contents)
-      e.xLayoutAlignment = 0.0
+    e.xLayoutAlignment = 0.0
     border = Swing.EmptyBorder(30, 10, 10, 10)
+
   }
 
   contents = mainPanel
