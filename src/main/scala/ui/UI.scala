@@ -3,8 +3,10 @@ package ui
 import java.io.File
 
 import search.SearchActor
+
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.swing.{BoxPanel, Button, Dialog, FileChooser, FlowPanel, Label, MainFrame, Orientation, ScrollPane, Swing, TextArea, TextField}
+import scala.swing.event.{ButtonClicked}
+import scala.swing.{BoxPanel, Button, Dialog, FileChooser, FlowPanel, Label, MainFrame, Orientation, ScrollPane, Swing, TextArea, TextField, ToggleButton}
 import scala.util.{Failure, Success}
 
 /**
@@ -30,7 +32,21 @@ object UI extends MainFrame {
     editable = false
   }
 
+  val enableDBButton = new ToggleButton("DB Off")
+
+  listenTo(enableDBButton)
+
+  //handle enable/disable DB event
+  reactions += {
+    case ButtonClicked(src) => {
+      DBEnable = src.selected
+      if(src.selected) enableDBButton.text = "DB On" else enableDBButton.text = "DB Off"
+    }
+  }
+
+  //build select/close button panel
   val buttonPanel = new FlowPanel {
+    contents += enableDBButton
     contents += Button("Close") {
       System.exit(0)
     }
@@ -41,7 +57,9 @@ object UI extends MainFrame {
   }
 
   var selectedFile: File = _
+  var DBEnable:Boolean = false
 
+  //build select file panel
   val searchPanel = new BoxPanel(Orientation.Horizontal) {
     contents += new Label("Search Words")
     contents += Swing.HStrut(5)
@@ -73,6 +91,7 @@ object UI extends MainFrame {
   }
 
 
+  //build status panel
   val statusLabel = new Label
   val statusPanel = new BoxPanel(Orientation.Horizontal) {
     statusLabel.yLayoutAlignment = 0.0
@@ -109,15 +128,9 @@ object UI extends MainFrame {
       //        listFileNames(fileChooser.selectedFile)
       //        textArea.text = path.mkString("\n")
       //        repaint()
-      case FileChooser.Result.Cancel => println("user close filechooser dialog")
+      case FileChooser.Result.Cancel => println("user close file chooser dialog")
       case _ => println("other action, maybe a error")
     }
   }
 
-
-
-}
-
-object RunIt extends App {
-  UI.visible = true
 }

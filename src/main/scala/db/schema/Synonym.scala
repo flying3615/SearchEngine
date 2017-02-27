@@ -23,9 +23,9 @@ object schema extends App {
     def id = column[Int]("SYN_ID", AutoInc, PrimaryKey)
 
     // This is the primary key column
-    def name = column[String]("SYN_NAME",Unique)
+    def name = column[String]("SYN_NAME", Unique)
 
-    def fk_id = column[Option[Int]]("SYN_FK_ID",Nullable)
+    def fk_id = column[Option[Int]]("SYN_FK_ID", Nullable)
 
     // Every table needs a * projection with the same type as the table's type parameter
     def * = (id, name, fk_id)
@@ -37,41 +37,22 @@ object schema extends App {
   val db = Database.forConfig("h2mem")
 
   try {
-
-    val setup = DBIO.seq(
-      // Create the tables, including primary and foreign keys
-      synonyms.schema.create,
-
-      //FK can be null?
-      synonyms += (1, "hotel", Option.empty),
-      synonyms += (2, "motel", Some(1)),
-      synonyms += (3, "inn", Some(1))
-    )
-
-    val setupTask = db.run(setup).andThen{
-      case Success(value)=>println("init db end")
-      case Failure(e) => println("init failed "+e.printStackTrace())
+    val setupTask = db.run( synonyms.schema.create).andThen {
+      case Success(value) => println("init db end")
+      case Failure(e) => println("init failed " + e.printStackTrace())
     }
-
-
-
-    Await.result(setupTask,1 seconds)
-
+    Await.result(setupTask, 1 seconds)
     //auto generate id when id=0
-    val insertTask = db.run(synonyms++=Seq((0,"test1",None),
-                                           (0,"test2",Some(1))
-                                          )
-                            )
-
-    Await.result(insertTask,1 second)
-
-    val queryTask = db.run(synonyms.result).andThen{
-      case Success(value) => println(value)
-      case Failure(e) => println(e.getMessage)
-    }
-
-    Await.result(queryTask,1 seconds)
-
+    val insertTask = db.run(synonyms ++= Seq((1, "hotel", Option.empty),
+      (2, "motel", Some(1)),
+      (3, "inn", Some(1)),
+      (0, "test1", None),
+      (0, "test2", Some(1))
+    ))
+    val queryTask = db.run(synonyms.result)
+    val queryTask2 = db.run(synonyms.result)
+    val lastTwoTasks = insertTask.flatMap(_=>queryTask).flatMap(_=>queryTask2)
+    Await.result(lastTwoTasks, 1 seconds) foreach println
   } finally db.close
 
 }
