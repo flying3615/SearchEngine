@@ -37,10 +37,8 @@ object schema extends App {
   val db = Database.forConfig("h2mem")
 
   try {
-    val setupTask = db.run( synonyms.schema.create).andThen {
-      case Success(value) => println("init db end")
-      case Failure(e) => println("init failed " + e.printStackTrace())
-    }
+    val setupTask = db.run( synonyms.schema.create)
+    //have to wait for creation return
     Await.result(setupTask, 1 seconds)
     //auto generate id when id=0
     val insertTask = db.run(synonyms ++= Seq((1, "hotel", Option.empty),
@@ -50,8 +48,7 @@ object schema extends App {
       (0, "test2", Some(1))
     ))
     val queryTask = db.run(synonyms.result)
-    val queryTask2 = db.run(synonyms.result)
-    val lastTwoTasks = insertTask.flatMap(_=>queryTask).flatMap(_=>queryTask2)
+    val lastTwoTasks = insertTask.flatMap(_=>queryTask)
     Await.result(lastTwoTasks, 1 seconds) foreach println
   } finally db.close
 
