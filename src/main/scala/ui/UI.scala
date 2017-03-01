@@ -1,13 +1,15 @@
 package ui
 
 import java.io.File
+import java.net.URL
 
+import db.DB
 import search.SearchActor
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.swing.event.{ButtonClicked}
+import scala.swing.event.{ButtonClicked, WindowClosed, WindowClosing}
 import scala.swing.{BoxPanel, Button, Dialog, FileChooser, FlowPanel, Label, MainFrame, Orientation, ScrollPane, Swing, TextArea, TextField, ToggleButton}
-import scala.util.{Failure, Success}
+import scala.util.{Failure, Success, Try}
 
 /**
   * Created by liuyufei on 18/02/17.
@@ -42,12 +44,16 @@ object UI extends MainFrame {
       DBEnable = src.selected
       if(src.selected) enableDBButton.text = "DB On" else enableDBButton.text = "DB Off"
     }
+
+    case WindowClosing(src) => DB.closeDB;println("close window")
   }
 
   //build select/close button panel
   val buttonPanel = new FlowPanel {
     contents += enableDBButton
     contents += Button("Close") {
+      println("clean db")
+      DB.closeDB
       System.exit(0)
     }
     Swing.HStrut(20)
@@ -132,5 +138,10 @@ object UI extends MainFrame {
       case _ => println("other action, maybe a error")
     }
   }
+
+
+  def parseURL(url:String):Try[URL] = Try(new URL(url))
+
+  parseURL("aaa").getOrElse(new URL("http://www.baidu.com"))
 
 }

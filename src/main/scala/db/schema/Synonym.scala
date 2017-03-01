@@ -1,56 +1,54 @@
 package db
 
-import slick.ast.ColumnOption.{AutoInc, PrimaryKey, Unique}
+import slick.ast.ColumnOption.PrimaryKey
 import slick.jdbc.H2Profile.api._
-import slick.sql.SqlProfile.ColumnOption.Nullable
 
 import scala.concurrent.Await
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.util.{Failure, Success}
 import scala.concurrent.duration._
+import scala.io.Source
 
 /**
   * Created by liuyufei on 27/02/17.
   */
 
-object schema extends App {
+object DB extends App {
 
-  val synonyms = TableQuery[Synonym]
+  val synonyms = TableQuery[Synonyms]
 
+  case class Synonym(root_word:String,synonyms:String)
 
-  // Definition of the Synonym table
-  class Synonym(tag: Tag) extends Table[(Int, String, Option[Int])](tag, "Synonym") {
-    def id = column[Int]("SYN_ID", AutoInc, PrimaryKey)
-
+  // Definition of the Synonym table, table of Synonym
+  class Synonyms(tag: Tag) extends Table[Synonym](tag, "Synonym") {
+    def root_word = column[String]("root_word", PrimaryKey)
     // This is the primary key column
-    def name = column[String]("SYN_NAME", Unique)
-
-    def fk_id = column[Option[Int]]("SYN_FK_ID", Nullable)
-
+    def synonyms = column[String]("synonyms")
     // Every table needs a * projection with the same type as the table's type parameter
-    def * = (id, name, fk_id)
-
-    // A reified foreign key relation that can be navigated to create a join
-    def root_word = foreignKey("SYN_FK", fk_id, synonyms)(_.id)
+    def * = (root_word, synonyms) <> (Synonym.tupled,Synonym.unapply)
   }
 
   val db = Database.forConfig("h2mem")
 
-  try {
-    val setupTask = db.run( synonyms.schema.create)
-    //have to wait for creation return
-    Await.result(setupTask, 1 seconds)
-    //auto generate id when id=0
-    val insertTask = db.run(synonyms ++= Seq((1, "hotel", Option.empty),
-      (2, "motel", Some(1)),
-      (3, "inn", Some(1)),
-      (0, "test1", None),
-      (0, "test2", Some(1))
-    ))
-    val queryTask = db.run(synonyms.result)
-    val lastTwoTasks = insertTask.flatMap(_=>queryTask)
-    Await.result(lastTwoTasks, 1 seconds) foreach println
-  } finally db.close
+  val inputData = Source.fromResource("synonym_words.txt").getLines().map(s=>{
+    val item = s.split(":")
+    Synonym(item(0),item(1))
+  }).toList
+
+  println("input size "+inputData.size)
+
+  val allTasks = synonyms.schema.create.flatMap(_=>synonyms ++= inputData).flatMap(_=>synonyms.result)
+  val trueResult = db.run(allTasks)
+
+  println(Await.result(trueResult, Duration.Inf).take(1))
+
+  val conditionQuery = synonyms.filter(_.root_word === "abandonment").map(_.synonyms).result
+  println(conditionQuery.statements.head)
+
+  closeDB
+
+  def closeDB = {
+    if(db!=null) db.close()
+  }
 
 }
 
