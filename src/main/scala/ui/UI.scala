@@ -1,16 +1,18 @@
 package ui
 
 import java.io.File
-import java.net.URL
 
 import akka.actor.ActorRef
-import db.{DB, DisableDBMessage, EnableDBMessage}
+import akka.pattern.Patterns
+import db.{DisableDBMessage, EnableDBMessage, GetSynonyms}
 import search.SearchActor
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.swing.event.{ButtonClicked, WindowClosed, WindowClosing}
+import scala.concurrent.Future
+import scala.concurrent.duration._
+import scala.swing.event.{ButtonClicked, WindowClosing}
 import scala.swing.{BoxPanel, Button, Dialog, FileChooser, FlowPanel, Label, MainFrame, Orientation, ScrollPane, Swing, TextArea, TextField, ToggleButton}
-import scala.util.{Failure, Success, Try}
+import scala.util.{Failure, Success}
 
 /**
   * Created by liuyufei on 18/02/17.
@@ -44,9 +46,11 @@ class UI(dbActor:ActorRef) extends MainFrame {
     case ButtonClicked(src) => {
       DBEnable = src.selected
       if(src.selected) {
+        DBEnable = true
         enableDBButton.text = "DB On"
         dbActor ! EnableDBMessage
       } else {
+        DBEnable = false
         enableDBButton.text = "DB Off"
         dbActor ! DisableDBMessage
       }
@@ -80,27 +84,6 @@ class UI(dbActor:ActorRef) extends MainFrame {
     contents += Button("GO") {
       goSearch()
     }
-
-    def goSearch(): Unit = {
-      if (searchWords.text.isEmpty) {
-        //open a dialog
-        Dialog.showMessage(contents.head, "Search Word Cannot be Empty", title = "ERROR")
-        return
-      }
-
-      if (selectedFile.isDirectory) {
-        //do future
-        SearchActor.search(selectedFile, searchWords.text).onComplete {
-          case Success(result) =>
-            textArea.text = result._1.mkString("\n")
-            statusLabel.text = result._2
-          case Failure(ex) => Dialog.showMessage(contents.head, ex.getMessage, title = "ERROR")
-        }
-      } else {
-        // re-select
-        statusLabel.text = selectedFile.getAbsolutePath + " is not a directory,please re-select"
-      }
-    }
   }
 
 
@@ -132,6 +115,7 @@ class UI(dbActor:ActorRef) extends MainFrame {
 
   contents = mainPanel
 
+
   def selectFile(): Unit = {
     fileChooser.showOpenDialog(mainPanel) match {
       case FileChooser.Result.Approve =>
@@ -147,8 +131,49 @@ class UI(dbActor:ActorRef) extends MainFrame {
   }
 
 
-  def parseURL(url:String):Try[URL] = Try(new URL(url))
+  def goSearch(): Unit = {
+    if (searchWords.text.isEmpty) {
+      //open a dialog
+      Dialog.showMessage(contents.head, "Search Word Cannot be Empty", title = "ERROR")
+      return
+    }
 
-  parseURL("aaa").getOrElse(new URL("http://www.baidu.com"))
+    if (selectedFile==null) {
+      //open a dialog
+      Dialog.showMessage(contents.head, "Please select a search directory", title = "ERROR")
+      return
+    }
 
+    if (selectedFile.isDirectory) {
+      //do future
+      val searchResultFuture = if(DBEnable){
+        //do search synonyms in db
+        val synonymFuture = Patterns.ask(dbActor, GetSynonyms(searchWords.text), 10 seconds)
+         synonymFuture.flatMap{synonyms=>
+          SearchActor.search(selectedFile,synonyms.toString)
+        }
+      }else{
+        // do search user input
+        SearchActor.search(selectedFile,searchWords.text)
+      }
+
+      FutureHelper.withSuccess(searchResultFuture){result=>
+        textArea.text = result._1.mkString("\n")
+        statusLabel.text = result._2
+      }
+    } else {
+      // re-select
+      statusLabel.text = selectedFile.getAbsolutePath + " is not a directory,please re-select"
+    }
+  }
+}
+
+
+object FutureHelper {
+  def withSuccess[T](future:Future[T])(f: T=>Unit) = {
+    future.onComplete{
+      case Success(value) => f(value)
+      case Failure(e) => e.printStackTrace()
+    }
+  }
 }

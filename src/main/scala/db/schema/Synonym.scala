@@ -60,13 +60,19 @@ class DB extends Actor {
     db = Database.forConfig("h2mem")
   }
 
+  def searchSynonyms(root_word:String) = {
+    val conditionQuery = synonyms.filter(_.root_word === root_word).map(_.synonyms).result
+    Await.result(db.run(conditionQuery), 2 seconds)
+  }
+
   override def receive: Receive = {
     case InitDBMessage =>
       val initDBResult = Await.result(initDB, 2 seconds)
       sender ! initDBResult.size
     case EnableDBMessage =>connectDB;println("enable DB")
     case DisableDBMessage => closeDB; println("disable DB")
-    case _ =>
+    case GetSynonyms(root_word) => sender ! searchSynonyms(root_word)
+    case _ => println("error to receive msg "+_)
   }
 }
 
@@ -75,5 +81,7 @@ case object InitDBMessage
 case object EnableDBMessage
 
 case object DisableDBMessage
+
+case class GetSynonyms(root_word:String)
 
 
