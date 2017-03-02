@@ -10,6 +10,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
   */
 object SearchActor {
 
+  //todo change words to case class Synonym
   def search(selectedFile: File, words: String): Future[(ArrayBuffer[String],String)] = Future {
     println(s"go for search ${selectedFile.getAbsolutePath} with search word ${words}")
     val start = System.currentTimeMillis()

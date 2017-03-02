@@ -20,7 +20,7 @@ import scala.util.{Failure, Success}
   * Write a GUI application which enables the user to select a folder. The application outputs the list of
   * all files under this folder (and sub folders).
   */
-class UI(dbActor:ActorRef) extends MainFrame {
+class UI(dbActor: ActorRef) extends MainFrame {
 
   title = "File selector"
 
@@ -45,7 +45,7 @@ class UI(dbActor:ActorRef) extends MainFrame {
   reactions += {
     case ButtonClicked(src) => {
       DBEnable = src.selected
-      if(src.selected) {
+      if (src.selected) {
         DBEnable = true
         enableDBButton.text = "DB On"
         dbActor ! EnableDBMessage
@@ -74,7 +74,7 @@ class UI(dbActor:ActorRef) extends MainFrame {
   }
 
   var selectedFile: File = _
-  var DBEnable:Boolean = false
+  var DBEnable: Boolean = false
 
   //build select file panel
   val searchPanel = new BoxPanel(Orientation.Horizontal) {
@@ -108,7 +108,9 @@ class UI(dbActor:ActorRef) extends MainFrame {
     contents += buttonPanel
     contents += statusPanel
 
-    contents foreach {_.xLayoutAlignment = 0.0}
+    contents foreach {
+      _.xLayoutAlignment = 0.0
+    }
     border = Swing.EmptyBorder(30, 10, 10, 10)
 
   }
@@ -138,7 +140,7 @@ class UI(dbActor:ActorRef) extends MainFrame {
       return
     }
 
-    if (selectedFile==null) {
+    if (selectedFile == null) {
       //open a dialog
       Dialog.showMessage(contents.head, "Please select a search directory", title = "ERROR")
       return
@@ -146,18 +148,20 @@ class UI(dbActor:ActorRef) extends MainFrame {
 
     if (selectedFile.isDirectory) {
       //do future
-      val searchResultFuture = if(DBEnable){
+      val searchResultFuture = if (DBEnable) {
         //do search synonyms in db
-        val synonymFuture = Patterns.ask(dbActor, GetSynonyms(searchWords.text), 10 seconds)
-         synonymFuture.flatMap{synonyms=>
-          SearchActor.search(selectedFile,synonyms.toString)
+        val synonymFuture = Patterns.ask(dbActor, GetSynonyms(searchWords.text), 5 seconds)
+        synonymFuture.flatMap { synonyms =>
+          //todo import synonym case
+          SearchActor.search(selectedFile, synonyms.toString)
         }
-      }else{
+      } else {
         // do search user input
-        SearchActor.search(selectedFile,searchWords.text)
+        //todo import synonym case
+        SearchActor.search(selectedFile, searchWords.text)
       }
 
-      FutureHelper.withSuccess(searchResultFuture){result=>
+      FutureHelper.withSuccess(searchResultFuture) { result =>
         textArea.text = result._1.mkString("\n")
         statusLabel.text = result._2
       }
@@ -170,8 +174,8 @@ class UI(dbActor:ActorRef) extends MainFrame {
 
 
 object FutureHelper {
-  def withSuccess[T](future:Future[T])(f: T=>Unit) = {
-    future.onComplete{
+  def withSuccess[T](future: Future[T])(f: T => Unit) = {
+    future.onComplete {
       case Success(value) => f(value)
       case Failure(e) => e.printStackTrace()
     }

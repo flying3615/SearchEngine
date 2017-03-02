@@ -1,7 +1,6 @@
 package db
 
 import akka.actor.Actor
-import akka.actor.Actor.Receive
 import slick.ast.ColumnOption.PrimaryKey
 import slick.jdbc.H2Profile.api._
 
@@ -9,7 +8,6 @@ import scala.concurrent.Await
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import scala.io.Source
-import scala.util.{Failure, Success}
 
 /**
   * Created by liuyufei on 27/02/17.
@@ -19,20 +17,7 @@ class DB extends Actor {
 
   val synonyms = TableQuery[Synonyms]
 
-  case class Synonym(root_word: String, synonyms: String)
-
-  // Definition of the Synonym table, table of Synonym
-  class Synonyms(tag: Tag) extends Table[Synonym](tag, "Synonym") {
-    def root_word = column[String]("root_word", PrimaryKey)
-
-    // This is the primary key column
-    def synonyms = column[String]("synonyms")
-
-    // Every table needs a * projection with the same type as the table's type parameter
-    def * = (root_word, synonyms) <> (Synonym.tupled, Synonym.unapply)
-  }
-
-  var db:Database = _
+  var db: Database = _
 
   def initDB = {
     val inputData = Source.fromResource("synonym_words.txt").getLines().map(s => {
@@ -45,10 +30,6 @@ class DB extends Actor {
     val allTasks = synonyms.schema.create.flatMap(_ => synonyms ++= inputData).flatMap(_ => synonyms.result)
     db.run(allTasks)
 
-    //    println(Await.result(trueResult, Duration.Inf).take(1))
-    //
-    //    val conditionQuery = synonyms.filter(_.root_word === "abandonment").map(_.synonyms).result
-    //    db.run(conditionQuery)
   }
 
 
@@ -60,7 +41,12 @@ class DB extends Actor {
     db = Database.forConfig("h2mem")
   }
 
-  def searchSynonyms(root_word:String) = {
+  def searchSynonymsWithRoot(root_word: String) = {
+    val conditionQuery = synonyms.filter(_.root_word === root_word).result
+    Await.result(db.run(conditionQuery), 2 seconds)
+  }
+
+  def searchSynonyms(root_word: String) = {
     val conditionQuery = synonyms.filter(_.root_word === root_word).map(_.synonyms).result
     Await.result(db.run(conditionQuery), 2 seconds)
   }
@@ -68,11 +54,12 @@ class DB extends Actor {
   override def receive: Receive = {
     case InitDBMessage =>
       val initDBResult = Await.result(initDB, 2 seconds)
+      //tell send DB is OK
       sender ! initDBResult.size
-    case EnableDBMessage =>connectDB;println("enable DB")
+    case EnableDBMessage => connectDB; println("enable DB")
     case DisableDBMessage => closeDB; println("disable DB")
-    case GetSynonyms(root_word) => sender ! searchSynonyms(root_word)
-    case _ => println("error to receive msg "+_)
+    case GetSynonyms(root_word) => sender ! searchSynonymsWithRoot(root_word)
+    case _ => println("error to receive msg " + _)
   }
 }
 
@@ -82,6 +69,6 @@ case object EnableDBMessage
 
 case object DisableDBMessage
 
-case class GetSynonyms(root_word:String)
+case class GetSynonyms(root_word: String)
 
 
