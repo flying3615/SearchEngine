@@ -3,7 +3,8 @@ package ui
 import java.io.File
 import java.net.URL
 
-import db.DB
+import akka.actor.ActorRef
+import db.{DB, DisableDBMessage, EnableDBMessage}
 import search.SearchActor
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -17,7 +18,7 @@ import scala.util.{Failure, Success, Try}
   * Write a GUI application which enables the user to select a folder. The application outputs the list of
   * all files under this folder (and sub folders).
   */
-object UI extends MainFrame {
+class UI(dbActor:ActorRef) extends MainFrame {
 
   title = "File selector"
 
@@ -42,18 +43,24 @@ object UI extends MainFrame {
   reactions += {
     case ButtonClicked(src) => {
       DBEnable = src.selected
-      if(src.selected) enableDBButton.text = "DB On" else enableDBButton.text = "DB Off"
+      if(src.selected) {
+        enableDBButton.text = "DB On"
+        dbActor ! EnableDBMessage
+      } else {
+        enableDBButton.text = "DB Off"
+        dbActor ! DisableDBMessage
+      }
     }
 
-    case WindowClosing(src) => DB.closeDB;println("close window")
+    case WindowClosing(src) =>
+      dbActor ! DisableDBMessage
   }
 
   //build select/close button panel
   val buttonPanel = new FlowPanel {
     contents += enableDBButton
     contents += Button("Close") {
-      println("clean db")
-      DB.closeDB
+      dbActor ! DisableDBMessage
       System.exit(0)
     }
     Swing.HStrut(20)
