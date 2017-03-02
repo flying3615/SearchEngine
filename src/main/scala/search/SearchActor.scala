@@ -2,16 +2,19 @@ package search
 
 import java.io.File
 
+import akka.actor.Actor
+import akka.actor.Actor.Receive
+
 import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 /**
   * Created by liuyufei on 26/02/17.
   */
-object SearchActor {
+class SearchActor extends Actor{
 
   //todo change words to case class Synonym
-  def search(selectedFile: File, words: String): Future[(ArrayBuffer[String],String)] = Future {
+  def search(selectedFile: File, words: String) =  {
     println(s"go for search ${selectedFile.getAbsolutePath} with search word ${words}")
     val start = System.currentTimeMillis()
     val paths = listFileNames(selectedFile)
@@ -35,4 +38,10 @@ object SearchActor {
     paths
   }
 
+  override def receive: Receive = {
+    case SearchMessage(selectFiled,synonyms) => sender ! search(selectFiled,synonyms)
+    case _ => println("unhandle message")
+  }
 }
+
+case class SearchMessage(selectFiled:File,synonyms:String)

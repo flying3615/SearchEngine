@@ -1,6 +1,7 @@
 import akka.actor.{ActorSystem, Props}
 import akka.pattern.Patterns._
 import db.{DB, EnableDBMessage, InitDBMessage}
+import search.SearchActor
 import ui.UI
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -13,6 +14,7 @@ object Main extends App{
 
   val system = ActorSystem("SearchEngine")
   val dbActor = system.actorOf(Props[DB],name="dbActor")
+  val searchActor = system.actorOf(Props[SearchActor],name="searchActor")
   //start db connection
   dbActor ! EnableDBMessage
   //init db data
@@ -21,7 +23,7 @@ object Main extends App{
     case Success(value) =>  println("init db result "+value)
     case Failure(e) => e.printStackTrace()
   }
-  val ui = new UI(dbActor)
+  val ui = new UI(dbActor,searchActor)
   ui.visible = true
 
 }

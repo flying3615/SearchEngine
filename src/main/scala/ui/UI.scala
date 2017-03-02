@@ -5,8 +5,9 @@ import java.io.File
 import akka.actor.ActorRef
 import akka.pattern.Patterns
 import db.{DisableDBMessage, EnableDBMessage, GetSynonyms}
-import search.SearchActor
+import search.{SearchActor, SearchMessage}
 
+import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.concurrent.duration._
@@ -20,7 +21,7 @@ import scala.util.{Failure, Success}
   * Write a GUI application which enables the user to select a folder. The application outputs the list of
   * all files under this folder (and sub folders).
   */
-class UI(dbActor: ActorRef) extends MainFrame {
+class UI(dbActor: ActorRef,searchActor:ActorRef) extends MainFrame {
 
   title = "File selector"
 
@@ -152,18 +153,21 @@ class UI(dbActor: ActorRef) extends MainFrame {
         //do search synonyms in db
         val synonymFuture = Patterns.ask(dbActor, GetSynonyms(searchWords.text), 5 seconds)
         synonymFuture.flatMap { synonyms =>
+          //Patterns.ask searchactor for search within 5 seconds
           //todo import synonym case
-          SearchActor.search(selectedFile, synonyms.toString)
+          Patterns.ask(searchActor,SearchMessage(selectedFile, synonyms.toString), 5 seconds)
         }
       } else {
         // do search user input
         //todo import synonym case
-        SearchActor.search(selectedFile, searchWords.text)
+        Patterns.ask(searchActor,SearchMessage(selectedFile, searchWords.text), 5 seconds)
       }
 
-      FutureHelper.withSuccess(searchResultFuture) { result =>
-        textArea.text = result._1.mkString("\n")
-        statusLabel.text = result._2
+      FutureHelper.withSuccess(searchResultFuture) {result =>
+        //cast to tupple2
+        val r = result.asInstanceOf[(ArrayBuffer[String], String)]
+        textArea.text = r._1.mkString("\n")
+        statusLabel.text = r._2
       }
     } else {
       // re-select
@@ -171,6 +175,8 @@ class UI(dbActor: ActorRef) extends MainFrame {
     }
   }
 }
+
+
 
 
 object FutureHelper {
