@@ -1,8 +1,7 @@
 package db
 
 import akka.actor.Actor
-import slick.ast.ColumnOption.PrimaryKey
-import slick.jdbc.H2Profile.api._
+import slick.jdbc.MySQLProfile.api._
 
 import scala.concurrent.Await
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -32,13 +31,12 @@ class DB extends Actor {
 
   }
 
-
   def closeDB = {
     if (db != null) db.close()
   }
 
   def connectDB = {
-    db = Database.forConfig("h2mem")
+    db = Database.forConfig("mysqldb")
   }
 
   def searchSynonymsWithRoot(root_word: String) = {
@@ -53,8 +51,9 @@ class DB extends Actor {
 
   override def receive: Receive = {
     case InitDBMessage =>
-      val initDBResult = Await.result(initDB, 2 seconds)
-      //tell send DB is OK
+      //infinite time...
+      val initDBResult = Await.result(initDB, 10 seconds)
+      //tell sender DB is OK
       sender ! initDBResult.size
     case EnableDBMessage => connectDB; println("enable DB")
     case DisableDBMessage => closeDB; println("disable DB")
