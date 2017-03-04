@@ -1,14 +1,15 @@
 package search
 
+import scala.collection.mutable.ArrayBuffer
+
 /**
   * Created by liuyufei on 4/03/17.
   */
 object Stemming {
 
-  //Have to shadow Pref.$conforms
-  implicit def $conforms(input: String): String = {
+  def doStem(input:(String, Int, ArrayBuffer[Int])) = {
     val stemming = new Stemming()
-    stemming.add(input)
+    stemming.add(input._1)
     if (stemming.b.length > 2) {
       stemming.step1()
       stemming.step2()
@@ -17,7 +18,7 @@ object Stemming {
       stemming.step5a()
       stemming.step5b()
     }
-    stemming.b
+    (stemming.b,input._2,input._3)
   }
 }
 
