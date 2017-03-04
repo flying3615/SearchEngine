@@ -1,6 +1,6 @@
 package search
 
-import scala.collection.mutable.{ArrayBuffer, ListBuffer}
+import scala.collection.mutable.{ArrayBuffer, ListBuffer,Map}
 import scala.io.Source
 
 /**
@@ -8,19 +8,13 @@ import scala.io.Source
   */
 object InvertedIndexHelper extends App {
 
-  private val invertedMap = scala.collection.mutable.Map.empty[String, ListBuffer[Map[String, (Int, ArrayBuffer[Int])]]]
+  private val invertedMap = Map.empty[String, ListBuffer[Map[String, (Int, ArrayBuffer[Int])]]]
 
   def buildupInvertedMap(files: Seq[String], f: ((String, Int, ArrayBuffer[Int])) => ((String, Int, ArrayBuffer[Int]))) = {
     files.foreach { filePath =>
       Source.fromFile(filePath)
         .getLines() //get all lines from the file
-        .flatMap({ line =>
-        val ss = scala.collection.mutable.Map.empty[String, (String, Int, ArrayBuffer[Int])]
-        line.trim.split("\\W+").foreach { word =>
-          ss(word) = multiIndexOf(line, word, ss.getOrElse(word, (word, 0, ArrayBuffer[Int]())))
-        }
-        ss.values
-      })
+        .flatMap(lineToTuple(_))
         .map(f(_)) //convert line to Array(word,index)
         .foldLeft(invertedMap) {
         (map, wordWithIndex) => {
@@ -30,6 +24,14 @@ object InvertedIndexHelper extends App {
     }
   }
 
+
+  def lineToTuple(line: String): Iterable[(String, Int, ArrayBuffer[Int])] = {
+    val ss = Map.empty[String, (String, Int, ArrayBuffer[Int])]
+    line.trim.split("\\W+").foreach { word =>
+      ss(word) = multiIndexOf(line, word, ss.getOrElse(word, (word, 0, ArrayBuffer[Int]())))
+    }
+    ss.values
+  }
 
   def multiIndexOf(line: String, word: String, acc: (String, Int, ArrayBuffer[Int])) = {
     if (acc._1 == word) {
