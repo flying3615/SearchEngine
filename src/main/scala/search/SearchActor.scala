@@ -35,6 +35,9 @@ class SearchActor extends Actor{
         paths += f.getAbsolutePath
       }
     })
+
+//    InvertedIndexHelper.buildupInvertedMap(paths)
+
     paths
   }
 

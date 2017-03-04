@@ -49,6 +49,13 @@ class DB extends Actor {
     Await.result(db.run(conditionQuery), 2 seconds)
   }
 
+
+  def updateSynonyms(synonym: Synonym) = db.run(synonyms update synonym)
+
+
+  def deleteSynonym(synonym: Synonym) = db.run(synonyms.filter(_.root_word === synonym.root_word).delete)
+
+
   override def receive: Receive = {
     case InitDBMessage =>
       //infinite time...
