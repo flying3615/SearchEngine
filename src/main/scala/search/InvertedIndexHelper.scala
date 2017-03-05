@@ -1,6 +1,6 @@
 package search
 
-import scala.collection.mutable.{ArrayBuffer, ListBuffer,Map}
+import scala.collection.mutable.{ArrayBuffer, ListBuffer, Map}
 import scala.io.Source
 
 /**
@@ -12,15 +12,16 @@ object InvertedIndexHelper extends App {
 
   def buildupInvertedMap(files: Seq[String], f: ((String, Int, ArrayBuffer[Int])) => ((String, Int, ArrayBuffer[Int]))) = {
     files.foreach { filePath =>
-      Source.fromFile(filePath)
-        .getLines() //get all lines from the file
-        .flatMap(lineToTuple(_))
-        .map(f(_)) //convert line to Array(word,index)
+      val sourceFile = Source.fromFile(filePath)
+      val oneLine = List(sourceFile.getLines().mkString(" ")) //reform to an array containing one line
+      oneLine.flatMap(lineToTuple(_)) //flatmap one line to List[(word,frequency,appearance indexes)]
+        .map(f(_)) //do stemming
         .foldLeft(invertedMap) {
         (map, wordWithIndex) => {
           map += (wordWithIndex._1 -> (map.getOrElse(wordWithIndex._1, ListBuffer()) += Map(filePath -> (wordWithIndex._2, wordWithIndex._3))))
         }
       }
+      sourceFile.close()
     }
   }
 
@@ -47,7 +48,8 @@ object InvertedIndexHelper extends App {
 
   val prefix = "/Users/liuyufei/Documents/Learn/scala/SearchEngine/src/main/resources/"
 
-  val input = List(prefix + "doc1", prefix + "doc2", prefix + "doc3", prefix + "doc4")
+//  val input = List(prefix + "doc1", prefix + "doc2", prefix + "doc3", prefix + "doc4")
+  val input = List( prefix + "doc2")
 
   buildupInvertedMap(input, Stemming.doStem _)
 
