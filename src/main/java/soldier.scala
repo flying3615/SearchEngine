@@ -49,15 +49,15 @@ class SoldierList {
     size
   }
 
-  def getSoldier(num:Int):soldier ={
+  def getSoldier(num:Int):Option[soldier] ={
     var tmp = header
     while(tmp.next!=header){
-      if(tmp.num==num) tmp
+      if(tmp.num==num) Option(tmp)
       else{
         tmp = tmp.next
       }
     }
-    return null
+    return None
   }
 
   def printList() = {

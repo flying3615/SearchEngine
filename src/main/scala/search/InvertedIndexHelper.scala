@@ -8,21 +8,31 @@ import scala.io.Source
   */
 object InvertedIndexHelper extends App {
 
-  private val invertedMap = Map.empty[String, ListBuffer[Map[String, (Int, ArrayBuffer[Int])]]]
-
   def buildupInvertedMap(files: Seq[String], f: ((String, Int, ArrayBuffer[Int])) => ((String, Int, ArrayBuffer[Int]))) = {
-    files.foreach { filePath =>
+    // Map of (filePath -> one line of content)
+    val fileToContentMap = files.map { filePath =>
       val sourceFile = Source.fromFile(filePath)
-      val oneLine = List(sourceFile.getLines().mkString(" ")) //reform to an array containing one line
-      oneLine.flatMap(lineToTuple(_)) //flatmap one line to List[(word,frequency,appearance indexes)]
-        .map(f(_)) //do stemming
-        .foldLeft(invertedMap) {
-        (map, wordWithIndex) => {
-          map += (wordWithIndex._1 -> (map.getOrElse(wordWithIndex._1, ListBuffer()) += Map(filePath -> (wordWithIndex._2, wordWithIndex._3))))
-        }
-      }
+      val oneLine = sourceFile.getLines().mkString(" ") //reform to an array containing one line
       sourceFile.close()
+      (filePath -> oneLine)
     }
+
+    val invertedIndex = fileToContentMap.map{
+      //convert to Iterable of (file -> (word,frequency, array of index))
+      case (file,content) => (file->lineToTuple(content).map(f(_)))
+    }.foldLeft(Map.empty[String, ListBuffer[Map[String, (Int, ArrayBuffer[Int])]]]){
+      (map,listOfWord) => {
+        listOfWord._2.foreach{ tuple3 =>
+          //map add an entry which is (word -> List of (filePath -> (frequency, Array of index)
+          map += (tuple3._1 -> (map.getOrElse(tuple3._1,ListBuffer()) += Map(listOfWord._1->(tuple3._2,tuple3._3))))
+        }
+        //return modified map
+        map
+      }
+    }
+
+    println(invertedIndex.mkString("\n"))
+
   }
 
 
@@ -47,12 +57,7 @@ object InvertedIndexHelper extends App {
 
 
   val prefix = "/Users/liuyufei/Documents/Learn/scala/SearchEngine/src/main/resources/"
-
-//  val input = List(prefix + "doc1", prefix + "doc2", prefix + "doc3", prefix + "doc4")
-  val input = List( prefix + "doc2")
-
+  val input = List(prefix + "doc1", prefix + "doc2", prefix + "doc3", prefix + "doc4")
   buildupInvertedMap(input, Stemming.doStem _)
-
-  println(invertedMap.mkString("\n"))
 
 }
