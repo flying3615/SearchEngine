@@ -1,6 +1,6 @@
 package search
 
-import scala.collection.mutable.{ArrayBuffer, ListBuffer, Map}
+import scala.collection.mutable.{ArrayBuffer, ListMap, Map}
 import scala.io.Source
 
 /**
@@ -17,20 +17,23 @@ object InvertedIndexHelper extends App {
       (filePath -> oneLine)
     }
 
-    val invertedIndex = fileToContentMap.map{
+    val invertedIndex = fileToContentMap.map {
       //convert to Iterable of (file -> (word,frequency, array of index))
-      case (file,content) => (file->lineToTuple(content).map(f(_)))
-    }.foldLeft(Map.empty[String, ListBuffer[Map[String, (Int, ArrayBuffer[Int])]]]){
-      (map,file_content) => {
-        file_content._2.foreach{ word_freq_indexes =>
+      case (file, content) => (file -> lineToTuple(content).map(f(_)))
+    }.foldLeft(Map.empty[String, Map[String, (Int, ArrayBuffer[Int])]]) {
+      (map, file_content) => {
+        file_content._2.foreach { word_freq_indexes =>
           //map add an entry which is (word -> List of (filePath -> (frequency, Array of index)
-          map += (word_freq_indexes._1 -> (map.getOrElse(word_freq_indexes._1,ListBuffer()) += Map(file_content._1->(word_freq_indexes._2,word_freq_indexes._3))))
+          map += (word_freq_indexes._1 -> (map.getOrElse(word_freq_indexes._1, Map()) += (file_content._1 -> (word_freq_indexes._2, word_freq_indexes._3))))
         }
         //return modified map
         map
       }
+    }.map {case (word, listMap) =>
+      //sort by word frequency
+        val newListMap = ListMap(listMap.toSeq.sortBy(_._2._1): _*)
+        (word -> newListMap)
     }
-
     println(invertedIndex.mkString("\n"))
 
   }
