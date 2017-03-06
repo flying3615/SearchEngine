@@ -21,10 +21,10 @@ object InvertedIndexHelper extends App {
       //convert to Iterable of (file -> (word,frequency, array of index))
       case (file,content) => (file->lineToTuple(content).map(f(_)))
     }.foldLeft(Map.empty[String, ListBuffer[Map[String, (Int, ArrayBuffer[Int])]]]){
-      (map,listOfWord) => {
-        listOfWord._2.foreach{ tuple3 =>
+      (map,file_content) => {
+        file_content._2.foreach{ word_freq_indexes =>
           //map add an entry which is (word -> List of (filePath -> (frequency, Array of index)
-          map += (tuple3._1 -> (map.getOrElse(tuple3._1,ListBuffer()) += Map(listOfWord._1->(tuple3._2,tuple3._3))))
+          map += (word_freq_indexes._1 -> (map.getOrElse(word_freq_indexes._1,ListBuffer()) += Map(file_content._1->(word_freq_indexes._2,word_freq_indexes._3))))
         }
         //return modified map
         map
