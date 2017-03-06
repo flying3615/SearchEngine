@@ -17,16 +17,21 @@ object InvertedIndexHelper extends App {
       (filePath -> oneLine)
     }
 
-    val invertedIndex = fileToContentMap.map {
+    fileToContentMap.map {
       //convert to Iterable of (file -> (word,frequency, array of index))
       case (file, content) => (file -> lineToTuple(content).map(f(_)))
     }.foldLeft(Map.empty[String, Map[String, (Int, ArrayBuffer[Int])]]) {
       (map, file_content) => {
         file_content._2.foreach { word_freq_indexes =>
-          //map add an entry which is (word -> List of (filePath -> (frequency, Array of index)
-          map += (word_freq_indexes._1 -> (map.getOrElse(word_freq_indexes._1, Map()) += (file_content._1 -> (word_freq_indexes._2, word_freq_indexes._3))))
+          //map add an entry which is (word -> entry of (filePath -> (frequency, Array of index)))
+          val indexMapValue = (map.getOrElse(word_freq_indexes._1, Map()) += (file_content._1 -> (word_freq_indexes._2, word_freq_indexes._3)))
+          map += (word_freq_indexes._1 -> indexMapValue)
+//          if (use_synonym) {
+//            synonyms.foreach {
+//              map += ( _ -> indexMapValue )
+//            }
+//          }
         }
-        //return modified map
         map
       }
     }.map {case (word, listMap) =>
@@ -34,7 +39,6 @@ object InvertedIndexHelper extends App {
         val newListMap = ListMap(listMap.toSeq.sortBy(_._2._1): _*)
         (word -> newListMap)
     }
-    println(invertedIndex.mkString("\n"))
 
   }
 
@@ -61,6 +65,6 @@ object InvertedIndexHelper extends App {
 
   val prefix = "/Users/liuyufei/Documents/Learn/scala/SearchEngine/src/main/resources/"
   val input = List(prefix + "doc1", prefix + "doc2", prefix + "doc3", prefix + "doc4")
-  buildupInvertedMap(input, Stemming.doStem _)
+  println(buildupInvertedMap(input, Stemming.doStem _).mkString("\n"))
 
 }
