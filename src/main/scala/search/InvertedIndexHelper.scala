@@ -8,9 +8,6 @@ import scala.io.Source
   */
 object InvertedIndexHelper extends App {
 
-//  val synonyms = Map("rise"->Array("up","ascend"))
-//  val use_synonym = true
-
   def buildupInvertedMap(files: Seq[String], f: ((String, Int, ArrayBuffer[Int])) => ((String, Int, ArrayBuffer[Int]))):Map[String, Map[String, (Int, ArrayBuffer[Int])]] = {
     // Map of (filePath -> one line of content)
     val fileToContentMap = files.map { filePath =>
@@ -54,9 +51,9 @@ object InvertedIndexHelper extends App {
   private def multiIndexOf(line: String, word: String, acc: (String, Int, ArrayBuffer[Int])) = {
     if (acc._1 == word) {
       val nextIndex = if (acc._3.isEmpty) line.indexOf(word) else line.indexOf(word, acc._3.last + word.size)
-      val fequ = acc._2 + 1
+      val freq = acc._2 + 1
       acc._3.append(nextIndex)
-      (word, fequ, acc._3)
+      (word, freq, acc._3)
     } else {
       acc
     }
