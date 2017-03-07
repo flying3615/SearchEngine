@@ -5,9 +5,8 @@ import java.io.File
 import akka.actor.ActorRef
 import akka.pattern.Patterns
 import db.{DisableDBMessage, EnableDBMessage, GetSynonyms, Synonym}
-import search.{SearchActor, SearchMessage}
+import search.SearchMessage
 
-import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.concurrent.duration._
@@ -124,10 +123,6 @@ class UI(dbActor: ActorRef,searchActor:ActorRef) extends MainFrame {
       case FileChooser.Result.Approve =>
         selectedFile = fileChooser.selectedFile
         statusLabel.text = selectedFile.getAbsolutePath
-      //        path.clear()
-      //        listFileNames(fileChooser.selectedFile)
-      //        textArea.text = path.mkString("\n")
-      //        repaint()
       case FileChooser.Result.Cancel => println("user close file chooser dialog")
       case _ => println("other action, maybe a error")
     }

@@ -3,17 +3,13 @@ package search
 import java.io.File
 
 import akka.actor.Actor
-import akka.actor.Actor.Receive
 
 import scala.collection.mutable.{ArrayBuffer, Map}
-import scala.concurrent.Future
-import scala.concurrent.ExecutionContext.Implicits.global
 /**
   * Created by liuyufei on 26/02/17.
   */
 class SearchActor extends Actor{
 
-  //todo change words to case class Synonym
   def search(selectedFile: File, words: String) =  {
     println(s"go for search ${selectedFile.getAbsolutePath} with search word ${words}")
     val start = System.currentTimeMillis()
@@ -34,6 +30,7 @@ class SearchActor extends Actor{
   }
 
 
+  //TODO implicit file type
   def listFileNames(file: File,paths:ArrayBuffer[String]): ArrayBuffer[String] = {
     file.listFiles().foreach(f => {
       if (f.isDirectory) {
@@ -43,7 +40,6 @@ class SearchActor extends Actor{
         if(f.getName.contains("txt")) paths += f.getAbsolutePath
       }
     })
-
     paths
   }
 
