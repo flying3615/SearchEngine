@@ -4,7 +4,7 @@ import java.io.File
 
 import akka.actor.ActorRef
 import akka.pattern.Patterns
-import db.{DisableDBMessage, EnableDBMessage, GetSynonyms}
+import db.{DisableDBMessage, EnableDBMessage, GetSynonyms, Synonym}
 import search.{SearchActor, SearchMessage}
 
 import scala.collection.mutable.ArrayBuffer
@@ -153,9 +153,11 @@ class UI(dbActor: ActorRef,searchActor:ActorRef) extends MainFrame {
         //do search synonyms in db
         val synonymFuture = Patterns.ask(dbActor, GetSynonyms(searchWords.text), 5 seconds)
         synonymFuture.flatMap { synonyms =>
-          //Patterns.ask searchactor for search within 5 seconds
+          //Patterns.ask search actor for search within 5 seconds
           //todo import synonym case
-          Patterns.ask(searchActor,SearchMessage(selectedFile, synonyms.toString), 5 seconds)
+          val someSynonym = synonyms.asInstanceOf[Some[Synonym]]
+          println(s"search root_word=${searchWords.text} its synonyms=${someSynonym.value.toString}")
+          Patterns.ask(searchActor,SearchMessage(selectedFile, someSynonym.value.toString), 5 seconds)
         }
       } else {
         // do search user input
@@ -164,8 +166,8 @@ class UI(dbActor: ActorRef,searchActor:ActorRef) extends MainFrame {
       }
 
       FutureHelper.withSuccess(searchResultFuture) {result =>
-        //cast to tupple2
-        val r = result.asInstanceOf[(ArrayBuffer[String], String)]
+        //cast to tuple2
+        val r = result.asInstanceOf[(List[String], String)]
         textArea.text = r._1.mkString("\n")
         statusLabel.text = r._2
       }

@@ -5,7 +5,7 @@ import java.io.File
 import akka.actor.Actor
 import akka.actor.Actor.Receive
 
-import scala.collection.mutable.ArrayBuffer
+import scala.collection.mutable.{ArrayBuffer, Map}
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 /**
@@ -17,26 +17,29 @@ class SearchActor extends Actor{
   def search(selectedFile: File, words: String) =  {
     println(s"go for search ${selectedFile.getAbsolutePath} with search word ${words}")
     val start = System.currentTimeMillis()
-    val paths = listFileNames(selectedFile)
+    val paths = listFileNames(selectedFile,new ArrayBuffer[String]())
+
+    val invertedMap:Map[String, Map[String, (Int, ArrayBuffer[Int])]] = InvertedIndexHelper.buildupInvertedMap(paths,Stemming.doStem _)
+    println(s"inverted index map = ${invertedMap.mkString("\n")}")
+    //get path List(ArrayBuffer)
+    val pathMap = words.split(",").flatMap(word=>invertedMap.get(word).map(optionMap=>optionMap.map(_._1)))
+
     val end = System.currentTimeMillis()
-    val statistic = s"search ${paths.size} matches took ${end-start} ms"
-    (paths,statistic)
+    val statistic = s"search ${pathMap.size} matches took ${end-start} ms"
+
+    (pathMap.toList, statistic)
   }
 
-  def listFileNames(file: File): ArrayBuffer[String] = {
-    val paths = new ArrayBuffer[String]()
+
+  def listFileNames(file: File,paths:ArrayBuffer[String]): ArrayBuffer[String] = {
     file.listFiles().foreach(f => {
       if (f.isDirectory) {
-        paths += f.getAbsolutePath
-        //if the file is a directory, recurse it
-        listFileNames(f)
+        listFileNames(f,paths)
       } else {
-        //if the file is a file, add its path to a list
-        paths += f.getAbsolutePath
+        //only support txt file
+        if(f.getName.contains("txt")) paths += f.getAbsolutePath
       }
     })
-
-//    InvertedIndexHelper.buildupInvertedMap(paths)
 
     paths
   }

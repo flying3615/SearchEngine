@@ -36,11 +36,12 @@ class DB extends Actor {
   }
 
   def connectDB = {
-    db = Database.forConfig("mysqldb")
+//    db = Database.forConfig("mysqldb")
+    db = Database.forConfig("h2mem")
   }
 
   def searchSynonymsWithRoot(root_word: String) = {
-    val conditionQuery = synonyms.filter(_.root_word === root_word).result
+    val conditionQuery = synonyms.filter(_.root_word === root_word).result.headOption
     Await.result(db.run(conditionQuery), 2 seconds)
   }
 
