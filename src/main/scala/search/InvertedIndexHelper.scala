@@ -8,14 +8,23 @@ import scala.io.Source
   */
 object InvertedIndexHelper extends App {
 
+  var filePath2ID = Map[String,String]()
+  var ID2FilePath = Map[String,String]()
+
   def buildupInvertedMap(files: Seq[String], f: ((String, Int, ArrayBuffer[Int])) => ((String, Int, ArrayBuffer[Int]))):Map[String, Map[String, (Int, ArrayBuffer[Int])]] = {
     // Map of (filePath -> one line of content)
+    var fileID = 0
     val fileToContentMap = files.map { filePath =>
       val sourceFile = Source.fromFile(filePath)
       val oneLine = sourceFile.getLines().mkString(" ") //reform to an array containing one line
       sourceFile.close()
-      (filePath -> oneLine)
+      //generate filePath -> id
+      fileID+=1
+      filePath2ID += (filePath -> fileID.toString)
+      (fileID -> oneLine)
     }
+    //invert the map
+    ID2FilePath = filePath2ID.map(_.swap)
 
     val unsortedResult = fileToContentMap.map {
       //convert to Iterable of (file -> (word,frequency, array of index))
@@ -62,6 +71,6 @@ object InvertedIndexHelper extends App {
 
   val prefix = "/Users/liuyufei/Documents/Learn/scala/SearchEngine/src/main/resources/"
   val input = List(prefix + "doc1.txt", prefix + "doc2.txt", prefix + "doc3.txt", prefix + "doc4.txt")
-  println(buildupInvertedMap(input, Stemming.doStem _).mkString("\n"))
+  println(buildupInvertedMap(input, Stemming.doStem).mkString("\n"))
 
 }

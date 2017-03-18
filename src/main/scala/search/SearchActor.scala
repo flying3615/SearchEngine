@@ -15,7 +15,7 @@ class SearchActor extends Actor{
     val start = System.currentTimeMillis()
     val paths = listFileNames(selectedFile,new ArrayBuffer[String]())
 
-    val invertedMap:Map[String, Map[String, (Int, ArrayBuffer[Int])]] = InvertedIndexHelper.buildupInvertedMap(paths,Stemming.doStem _)
+    val invertedMap:Map[String, Map[String, (Int, ArrayBuffer[Int])]] = InvertedIndexHelper.buildupInvertedMap(paths,Stemming.doStem)
     println(s"inverted index map = ${invertedMap.mkString("\n")}")
     //get path List(ArrayBuffer) and flat it
     val pathMap = words.split(",").flatMap{word=>
@@ -45,7 +45,7 @@ class SearchActor extends Actor{
 
   override def receive: Receive = {
     case SearchMessage(selectFiled,synonyms) => sender ! search(selectFiled,synonyms)
-    case _ => println("unhandle message")
+    case _ => println("unhandled message")
   }
 }
 

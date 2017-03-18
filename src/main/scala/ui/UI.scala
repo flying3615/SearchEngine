@@ -5,7 +5,7 @@ import java.io.File
 import akka.actor.ActorRef
 import akka.pattern.Patterns
 import db.{DisableDBMessage, EnableDBMessage, GetSynonyms, Synonym}
-import search.SearchMessage
+import search.{InvertedIndexHelper, SearchMessage}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -149,21 +149,21 @@ class UI(dbActor: ActorRef,searchActor:ActorRef) extends MainFrame {
         val synonymFuture = Patterns.ask(dbActor, GetSynonyms(searchWords.text), 5 seconds)
         synonymFuture.flatMap { synonyms =>
           //Patterns.ask search actor for search within 5 seconds
-          //todo import synonym case
           val someSynonym = synonyms.asInstanceOf[Some[Synonym]]
           println(s"search root_word=${searchWords.text} its synonyms=${someSynonym.value.toString}")
           Patterns.ask(searchActor,SearchMessage(selectedFile, someSynonym.value.toString), 5 seconds)
         }
       } else {
         // do search user input
-        //todo import synonym case
         Patterns.ask(searchActor,SearchMessage(selectedFile, searchWords.text), 5 seconds)
       }
 
       FutureHelper.withSuccess(searchResultFuture) {result =>
         //cast to tuple2
         val r = result.asInstanceOf[(List[String], String)]
-        textArea.text = r._1.mkString("\n")
+        //find path from InvertedIndexHelper
+        val paths = r._1.map(InvertedIndexHelper.ID2FilePath(_))
+        textArea.text = paths.mkString("\n")
         statusLabel.text = r._2
       }
     } else {
