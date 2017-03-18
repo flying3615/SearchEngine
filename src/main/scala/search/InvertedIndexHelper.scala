@@ -11,17 +11,21 @@ object InvertedIndexHelper extends App {
   var filePath2ID = Map[String,String]()
   var ID2FilePath = Map[String,String]()
 
-  def buildupInvertedMap(files: Seq[String], f: ((String, Int, ArrayBuffer[Int])) => ((String, Int, ArrayBuffer[Int]))):Map[String, Map[String, (Int, ArrayBuffer[Int])]] = {
+  type word_occ_indexes = (String, Int, ArrayBuffer[Int])
+  type invertedIndexMap = Map[String, Map[String, (Int, ArrayBuffer[Int])]]
+
+  def buildupInvertedMap(files: Seq[String], f: (word_occ_indexes) => (word_occ_indexes)):invertedIndexMap = {
     // Map of (filePath -> one line of content)
     var fileID = 0
     val fileToContentMap = files.map { filePath =>
       val sourceFile = Source.fromFile(filePath)
-      val oneLine = sourceFile.getLines().mkString(" ") //reform to an array containing one line
+      //reformat file content to one line, which makes easier to count word indexes
+      val oneLine = sourceFile.getLines().mkString(" ")
       sourceFile.close()
       //generate filePath -> id
       fileID+=1
       filePath2ID += (filePath -> fileID.toString)
-      (fileID -> oneLine)
+      (fileID.toString -> oneLine)
     }
     //invert the map
     ID2FilePath = filePath2ID.map(_.swap)
@@ -71,6 +75,6 @@ object InvertedIndexHelper extends App {
 
   val prefix = "/Users/liuyufei/Documents/Learn/scala/SearchEngine/src/main/resources/"
   val input = List(prefix + "doc1.txt", prefix + "doc2.txt", prefix + "doc3.txt", prefix + "doc4.txt")
-  println(buildupInvertedMap(input, Stemming.doStem).mkString("\n"))
+  println(buildupInvertedMap(input, Stemming.doStem _).mkString("\n"))
 
 }
