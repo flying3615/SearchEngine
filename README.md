@@ -6,9 +6,9 @@ Facing to a task that
  terms), the search tool returns all the files under the input folder that contains all these terms.
  and Manipulating a synonym database from [init file](https://app.box.com/s/lvpm0aniqk09xucv41ojyde17nvhmcl6)
 
-## output of full inverted index map list as below
+## Output of full inverted index map list as below
 
-output format like `word -> Map(doc_id -> (occurrences, index_list)`
+entry of inverted index map format like `word -> Map(doc_id -> (occurrences, index_list)`
 
 * forecast -> Map(1 -> (1,ArrayBuffer(19)))
 * sale -> Map(2 -> (6,ArrayBuffer(5, 24, 30, 41, 60, 66)), 4 -> (1,ArrayBuffer(15)), 1 -> (1,ArrayBuffer(9)), 3 -> (1,ArrayBuffer(18)))
