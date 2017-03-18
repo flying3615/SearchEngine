@@ -1,4 +1,4 @@
-# SearchEngine
+# SearchEngine - My first scala project
 Small file search engine using [inverted index](https://en.wikipedia.org/wiki/Inverted_index), powered by [Slick](http://slick.lightbend.com/ "Funcitonal Relational Mapping") &amp;[Akka](http://akka.io/ "toolkit to build highly concurrent app")&amp;[Scala-Swing](https://github.com/scala/scala-swing)
 Facing to a task that
 
@@ -100,3 +100,8 @@ object InvertedIndexHelper extends App {
 
 ## Stemming the words by 
 [The Porter Stemming Algorithm](https://tartarus.org/martin/PorterStemmer/)
+
+### Reference to inverted index
+[elastic - basic concepts URL](https://www.elastic.co/guide/en/elasticsearch/guide/current/inverted-index.html)
+[A first take at building an inverted index](https://learning.wintec.ac.nz/mod/url/view.php?id=552404)
+[Full inverted index](https://learning.wintec.ac.nz/mod/url/view.php?id=552405)
