@@ -16,7 +16,7 @@ output format like `word -> Map(doc_id -> (occurrences, index_list)`
  increas -> Map(3 -> (1,ArrayBuffer(1)))
  ascend -> Map(1 -> (3,ArrayBuffer(29, 36, 43)))
 
-##Core code to build full inverted index as below
+## Core code to build full inverted index as below
 
 <pre><code>
 object InvertedIndexHelper extends App {
