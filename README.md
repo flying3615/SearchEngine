@@ -98,6 +98,55 @@ object InvertedIndexHelper extends App {
 }
 </code></pre>
 
+## Unit test covered by 
+[scalaTest](http://www.scalatest.org/) & [akka-testkit](http://doc.akka.io/docs/akka/current/scala/testing.html)
+
+<pre><code>
+class SearchActorSpec extends TestKit(ActorSystem(
+  "SearchActorSpec",
+  ConfigFactory.parseString(SearchActorSpec.config)))
+  with DefaultTimeout with ImplicitSender
+  with WordSpecLike with Matchers with BeforeAndAfterAll{
+
+  val searchActor = system.actorOf(Props[SearchActor],name="searchActor")
+  val searchFile = new File(getClass.getResource("/doc4.txt").getFile)
+
+  val searchActorRef = TestActorRef(new SearchActor)
+
+  override def afterAll(): Unit = shutdown()
+
+  "SearchActor" should {
+    "respond to the SearchMessage " in {
+      within(500 millis) {
+        searchActor ! SearchMessage(searchFile.getParentFile,"forecast")
+        expectMsgPF(500 millis){
+          case msg @ (a:List[String],b:String) =>
+            a should have size 1
+            b should not be empty
+        }
+      }
+    }
+
+    "throw exception" in {
+      intercept[Exception](searchActorRef.receive("error"))
+    }
+  }
+}
+
+
+object SearchActorSpec {
+  val config =
+    """
+      |akka {
+      |   loglevel = "WARNING"
+      |}
+    """.stripMargin
+}
+
+</code></pre>
+
+
+
 ## Stemming the words by 
 [The Porter Stemming Algorithm](https://tartarus.org/martin/PorterStemmer/)
 

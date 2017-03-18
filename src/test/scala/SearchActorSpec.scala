@@ -6,7 +6,6 @@ import com.typesafe.config.ConfigFactory
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 import search.{SearchActor, SearchMessage}
 
-import scala.Tuple2
 import scala.concurrent.duration._
 /**
   * Created by liuyufei on 18/03/17.
@@ -40,8 +39,6 @@ class SearchActorSpec extends TestKit(ActorSystem(
       intercept[Exception](searchActorRef.receive("error"))
     }
   }
-
-
 }
 
 
