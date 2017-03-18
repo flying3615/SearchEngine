@@ -1,5 +1,10 @@
 # SearchEngine
 Small file search engine using [inverted index](https://en.wikipedia.org/wiki/Inverted_index), powered by [Slick](http://slick.lightbend.com/ "Funcitonal Relational Mapping") &amp;[Akka](http://akka.io/ "toolkit to build highly concurrent app")&amp;[Scala-Swing](https://github.com/scala/scala-swing)
+Facing to a task that
+
+>Build a basic search tool which allows the user to select a folder. Then for each query (list of
+ terms), the search tool returns all the files under the input folder that contains all these terms.
+ and Manipulating a synonym database from [init file](https://app.box.com/s/lvpm0aniqk09xucv41ojyde17nvhmcl6)
 
 ## output of full inverted index map list as below
 
@@ -92,3 +97,6 @@ object InvertedIndexHelper extends App {
 
 }
 </code></pre>
+
+## Stemming the words by 
+[The Porter Stemming Algorithm](https://tartarus.org/martin/PorterStemmer/)
