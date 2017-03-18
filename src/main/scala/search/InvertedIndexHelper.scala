@@ -6,7 +6,7 @@ import scala.io.Source
 /**
   * Created by liuyufei on 4/03/17.
   */
-object InvertedIndexHelper extends App {
+object InvertedIndexHelper {
 
   var filePath2ID = Map[String,String]()
   var ID2FilePath = Map[String,String]()
@@ -72,9 +72,5 @@ object InvertedIndexHelper extends App {
     }
   }
 
-
-  val prefix = "/Users/liuyufei/Documents/Learn/scala/SearchEngine/src/main/resources/"
-  val input = List(prefix + "doc1.txt", prefix + "doc2.txt", prefix + "doc3.txt", prefix + "doc4.txt")
-  println(buildupInvertedMap(input, Stemming.doStem _).mkString("\n"))
 
 }
