@@ -55,7 +55,7 @@ object InvertedIndexHelper {
 
   private def lineToTuple(line: String): Iterable[(String, Int, ArrayBuffer[Int])] = {
     val ss = Map.empty[String, (String, Int, ArrayBuffer[Int])]
-    line.trim.split("\\W+").foreach { word =>
+    line.trim.split("\\W+").filter(_!="").foreach { word =>
       ss(word) = multiIndexOf(line, word, ss.getOrElse(word, (word, 0, ArrayBuffer[Int]())))
     }
     ss.values
