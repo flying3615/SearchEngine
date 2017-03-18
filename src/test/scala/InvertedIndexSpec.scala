@@ -5,7 +5,7 @@ import search.{InvertedIndexHelper, Stemming}
 /**
   * Created by liuyufei on 28/02/17.
   */
-class ExampleSpec extends FlatSpec with Matchers {
+class InvertedIndexSpec extends FlatSpec with Matchers {
 
   it should "successfully build a not empty full inverted index map" in {
     val input = List("/doc1.txt","/doc2.txt","/doc3.txt","/doc4.txt").map(getClass.getResource(_).getPath)
