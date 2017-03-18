@@ -10,12 +10,18 @@ import scala.collection.mutable.{ArrayBuffer, Map}
   */
 class SearchActor extends Actor{
 
+  //alias for invertedIndexMap
+  type invertedIndexMap = Map[String, Map[String, (Int, ArrayBuffer[Int])]]
+  val invertedIndexHelperCache = Map[String,invertedIndexMap]()
+
   def search(selectedFile: File, words: String) =  {
     println(s"go for search ${selectedFile.getAbsolutePath} with search word ${words}")
     val start = System.currentTimeMillis()
     val paths = listFileNames(selectedFile,new ArrayBuffer[String]())
 
-    val invertedMap:Map[String, Map[String, (Int, ArrayBuffer[Int])]] = InvertedIndexHelper.buildupInvertedMap(paths,Stemming.doStem)
+    val invertedMap:invertedIndexMap = invertedIndexHelperCache
+                                           .getOrElseUpdate(selectedFile.getAbsolutePath,InvertedIndexHelper.buildupInvertedMap(paths,Stemming.doStem))
+
     println(s"inverted index map = ${invertedMap.mkString("\n")}")
     //get path List(ArrayBuffer) and flat it
     val pathMap = words.split(",").flatMap{word=>
@@ -30,14 +36,13 @@ class SearchActor extends Actor{
   }
 
 
-  //TODO implicit file type
-  def listFileNames(file: File,paths:ArrayBuffer[String]): ArrayBuffer[String] = {
+  def listFileNames(file: File,paths:ArrayBuffer[String], fileType:String ="txt"): ArrayBuffer[String] = {
     file.listFiles().foreach(f => {
       if (f.isDirectory) {
         listFileNames(f,paths)
       } else {
         //only support txt file
-        if(f.getName.contains("txt")) paths += f.getAbsolutePath
+        if(f.getName.contains(fileType)) paths += f.getAbsolutePath
       }
     })
     paths
@@ -45,7 +50,7 @@ class SearchActor extends Actor{
 
   override def receive: Receive = {
     case SearchMessage(selectFiled,synonyms) => sender ! search(selectFiled,synonyms)
-    case _ => println("unhandled message")
+    case _ => throw new Exception("unhandled message")
   }
 }
 
