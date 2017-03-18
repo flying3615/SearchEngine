@@ -10,16 +10,16 @@ Facing to a task that
 
 output format like `word -> Map(doc_id -> (occurrences, index_list)`
 
-> forecast -> Map(1 -> (1,ArrayBuffer(19)))
- sale -> Map(2 -> (6,ArrayBuffer(5, 24, 30, 41, 60, 66)), 4 -> (1,ArrayBuffer(15)), 1 -> (1,ArrayBuffer(9)), 3 -> (1,ArrayBuffer(18)))
- rise -> Map(2 -> (2,ArrayBuffer(11, 47)), 4 -> (1,ArrayBuffer(21)))
- top -> Map(1 -> (1,ArrayBuffer(15)))
- in -> Map(3 -> (2,ArrayBuffer(1, 10)), 2 -> (2,ArrayBuffer(16, 52)))
- juli -> Map(2 -> (2,ArrayBuffer(19, 55)), 4 -> (1,ArrayBuffer(1)), 3 -> (1,ArrayBuffer(27)))
- home -> Map(2 -> (2,ArrayBuffer(0, 36)), 4 -> (1,ArrayBuffer(10)), 1 -> (1,ArrayBuffer(4)), 3 -> (1,ArrayBuffer(13)))
- new -> Map(4 -> (1,ArrayBuffer(6)), 1 -> (1,ArrayBuffer(0)))
- increas -> Map(3 -> (1,ArrayBuffer(1)))
- ascend -> Map(1 -> (3,ArrayBuffer(29, 36, 43)))
+* forecast -> Map(1 -> (1,ArrayBuffer(19)))
+* sale -> Map(2 -> (6,ArrayBuffer(5, 24, 30, 41, 60, 66)), 4 -> (1,ArrayBuffer(15)), 1 -> (1,ArrayBuffer(9)), 3 -> (1,ArrayBuffer(18)))
+* rise -> Map(2 -> (2,ArrayBuffer(11, 47)), 4 -> (1,ArrayBuffer(21)))
+* top -> Map(1 -> (1,ArrayBuffer(15)))
+* in -> Map(3 -> (2,ArrayBuffer(1, 10)), 2 -> (2,ArrayBuffer(16, 52)))
+* juli -> Map(2 -> (2,ArrayBuffer(19, 55)), 4 -> (1,ArrayBuffer(1)), 3 -> (1,ArrayBuffer(27)))
+* home -> Map(2 -> (2,ArrayBuffer(0, 36)), 4 -> (1,ArrayBuffer(10)), 1 -> (1,ArrayBuffer(4)), 3 -> (1,ArrayBuffer(13)))
+* new -> Map(4 -> (1,ArrayBuffer(6)), 1 -> (1,ArrayBuffer(0)))
+* increas -> Map(3 -> (1,ArrayBuffer(1)))
+* ascend -> Map(1 -> (3,ArrayBuffer(29, 36, 43)))
 
 ## Core code to build full inverted index as below
 
